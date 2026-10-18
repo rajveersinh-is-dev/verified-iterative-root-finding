@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "If you use this work, please cite it as below."
+title: "A fourth-order iterative method for scalar nonlinear equations"
+authors:
+  - family-names: "Pardeshi"
+    given-names: "Rajveersinh Vishal"
+type: software
+license: MIT
+repository-code: "https://github.com/daveaddams91-dev/verified-iterative-root-finding"
