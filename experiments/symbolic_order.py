@@ -3,6 +3,7 @@
 Uses sympy Taylor expansion to confirm the error recurrence e_{n+1} ~ C e_n^4.
 """
 
+
 import sympy as sp
 
 e, A2, A3 = sp.symbols('e A2 A3')
