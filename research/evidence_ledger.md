@@ -9,4 +9,4 @@
 | E5 | Figure 1 shows convergence slopes | Experimental result | convergence_poly5.png (generated) | Verified | Visual | Sec. 4 |
 | E6 | IMAJNA has no mandatory APC (standard route) | Policy fact | OUP author instructions (verified 2026-10-18) | Verified | Colour in print £350/fig | journal_selection.md |
 | E7 | Preprints may be posted anywhere (author's original) | Policy fact | OUP self-archiving policy A (verified) | Verified | Accepted MS embargo | journal_selection.md |
-| E8 | Repository is public | Delivery fact | gh verification (to be recorded) | Pending | None | final report |
+| E8 | Repository is public | Delivery fact | gh verification | Verified | None | final report |
