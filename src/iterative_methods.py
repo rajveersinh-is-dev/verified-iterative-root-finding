@@ -8,11 +8,22 @@ All methods return a result dictionary with keys:
 
 from __future__ import annotations
 
-import math
 from typing import Callable, Dict, List, Optional
+import math
+
 
 
 def _safe_call(f: Callable[[float], float], x: float) -> Optional[float]:
+    """Safe call.
+    
+    Args:
+        f:
+        x:
+    
+    Returns:
+        float: Result of type float
+    
+    """
     try:
         v = f(x)
     except Exception:
@@ -154,7 +165,6 @@ def estimate_order(errors: List[float]) -> Optional[float]:
     """
     if len(errors) < 3:
         return None
-    import statistics
     pts = []
     for i in range(len(errors) - 1):
         a, b = errors[i], errors[i + 1]
