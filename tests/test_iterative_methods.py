@@ -87,6 +87,19 @@ def test_m4_at_root():
     assert r["converged"] or r["iterations"] <= 2
 
 
+def test_m4_exact_root():
+    def f(x):
+        return x
+
+    def df(x):
+        return 1.0
+
+    r = m4(f, df, 0.0)
+    assert r["converged"]
+    assert r["iterations"] == 0
+    assert r["root"] == 0.0
+
+
 def test_estimate_order_insufficient():
     assert estimate_order([]) is None
     assert estimate_order([1.0]) is None

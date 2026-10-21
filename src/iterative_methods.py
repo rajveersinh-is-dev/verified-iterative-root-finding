@@ -118,7 +118,10 @@ def m4(
         x = xs[-1]
         fx = _safe_call(f, x)
         dfx = _safe_call(df, x)
-        if fx is None or dfx is None or abs(dfx) < 1e-30 or abs(fx) < 1e-300:
+        if fx is None or dfx is None or abs(dfx) < 1e-30:
+            break
+        if abs(fx) < 1e-300:
+            converged = True
             break
         y = x - fx / dfx
         fy = _safe_call(f, y)
