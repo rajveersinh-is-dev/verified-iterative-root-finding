@@ -5,28 +5,35 @@ Uses sympy Taylor expansion to confirm the error recurrence e_{n+1} ~ C e_n^4.
 
 import sympy as sp
 
-e, A2, A3 = sp.symbols('e A2 A3')
+e, lam = sp.symbols('e lam')
+A2, A3, A4, A5 = sp.symbols('A2 A3 A4 A5')
 
-# Newton error: e_y = A2 e^2 + (2 A3 - 2 A2^2) e^3 + ...
-e_y = A2*e**2 + (2*A3 - 2*A2**2)*e**3
+f_expr = lam * (e + A2*e**2 + A3*e**3 + A4*e**4 + A5*e**5)
+df_expr = sp.diff(f_expr, e)
 
-# t = f(y)/f(x) ~ A2 e + (2 A3 - 3 A2^2) e^2
-t = A2*e + (2*A3 - 3*A2**2)*e**2
+# Newton error: e_y = e - f(x)/f'(x)
+e_y = sp.series(e - f_expr / df_expr, e, 0, 6).removeO()
 
-# ratio f(y)/f'(x) ~ A2 e^2 + (2 A3 - 4 A2^2) e^3
-ratio = A2*e**2 + (2*A3 - 4*A2**2)*e**3
+# f(y)
+fy_expr = sp.series(f_expr.subs(e, e_y), e, 0, 6).removeO()
 
-# H(t) = 1 + 2 t  (h1=2, h2=0)
-H = 1 + 2*t
+# ratio f(y)/f'(x)
+ratio_expr = sp.series(fy_expr / df_expr, e, 0, 6).removeO()
 
-err = sp.expand(e_y - ratio*H)
-err = sp.series(err, e, 0, 5).removeO()
+# t = f(y)/f(x)
+t_expr = sp.series(fy_expr / f_expr, e, 0, 6).removeO()
+
+# H(t) = 1 + 2 t
+H_expr = 1 + 2*t_expr
+
+err = sp.series(e_y - ratio_expr * H_expr, e, 0, 6).removeO()
 print("error expansion:", err)
 print("coeff e^1:", sp.simplify(err.coeff(e, 1)))
 print("coeff e^2:", sp.simplify(err.coeff(e, 2)))
 print("coeff e^3:", sp.simplify(err.coeff(e, 3)))
-print("coeff e^4:", sp.simplify(err.coeff(e, 4)))
+coeff_e4 = sp.simplify(err.coeff(e, 4))
+print("coeff e^4:", coeff_e4)
 assert err.coeff(e, 1) == 0
 assert err.coeff(e, 2) == 0
 assert err.coeff(e, 3) == 0
-print("VERIFIED: terms up to e^3 vanish; leading term is O(e^4).")
+print(f"VERIFIED: terms up to e^3 vanish; leading term is O(e^4) with coeff {coeff_e4}.")
