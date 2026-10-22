@@ -85,10 +85,10 @@ Substituting (2) into $f$ and expanding $f(y_n)/f'(x_n)$ and
 $f(y_n)/f(x_n)$ to sufficient order, one obtains, for the error
 $e_{n+1}=x_{n+1}-\alpha$,
 \[
-e_{n+1} = (14A_2^3-8A_2A_3)\,e_n^4 + O(e_n^5).
+e_{n+1} = (5A_2^3-A_2A_3)\,e_n^4 + O(e_n^5).
 \tag{3}
 \]
-Thus, provided $14A_2^3-8A_2A_3\neq0$, the method has order $4$. The
+Thus, provided $5A_2^3-A_2A_3\neq0$, the method has order $4$. The
 expansion (3) was verified independently with a symbolic computation
 (\texttt{experiments/symbolic\_order.py}), which confirms that the
 coefficients of $e_n$, $e_n^2$, and $e_n^3$ vanish and the leading
