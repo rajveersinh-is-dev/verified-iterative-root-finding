@@ -3,11 +3,14 @@
 import csv
 import json
 import math
+import mpmath
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from iterative_methods import newton, secant, m4, estimate_order
+
+mpmath.mp.dps = 100
 
 OUT = Path(__file__).resolve().parents[1] / "results"
 OUT.mkdir(exist_ok=True)
@@ -15,10 +18,10 @@ FIG = Path(__file__).resolve().parents[1] / "figures"
 FIG.mkdir(exist_ok=True)
 
 TESTS = [
-    ("poly2", lambda x: x * x - 2.0, lambda x: 2.0 * x, 1.5, 2.0, 1.0),
-    ("exp", lambda x: math.exp(x) - 2.0, lambda x: math.exp(x), 1.0, 2.0, 1.0),
-    ("cos", lambda x: math.cos(x) - x, lambda x: -math.sin(x) - 1.0, 0.5, 1.5, 0.5),
-    ("poly5", lambda x: x ** 5 - x - 0.1, lambda x: 5 * x ** 4 - 1, 0.9, 1.5, 0.5),
+    ("poly2", lambda x: x * x - mpmath.mpf('2.0'), lambda x: mpmath.mpf('2.0') * x, mpmath.mpf('1.5'), mpmath.mpf('2.0'), mpmath.mpf('1.0')),
+    ("exp", lambda x: mpmath.exp(x) - mpmath.mpf('2.0'), lambda x: mpmath.exp(x), mpmath.mpf('1.0'), mpmath.mpf('2.0'), mpmath.mpf('1.0')),
+    ("cos", lambda x: mpmath.cos(x) - x, lambda x: -mpmath.sin(x) - mpmath.mpf('1.0'), mpmath.mpf('0.5'), mpmath.mpf('1.5'), mpmath.mpf('0.5')),
+    ("poly5", lambda x: x ** 5 - x - mpmath.mpf('0.1'), lambda x: mpmath.mpf('5.0') * x ** 4 - mpmath.mpf('1.0'), mpmath.mpf('0.9'), mpmath.mpf('1.5'), mpmath.mpf('0.5')),
 ]
 
 
@@ -26,21 +29,21 @@ def run():
     rows = []
     for name, f, df, x0, sx0, sx1 in TESTS:
         # reference root via m4
-        ref = m4(f, df, x0, root=None, tol=1e-15, maxit=50)
+        ref = m4(f, df, x0, root=None, tol=1e-80, maxit=50)
         root = ref["root"]
         for method_name, res in [
-            ("Newton", newton(f, df, x0, root=root, tol=1e-15, maxit=50)),
-            ("M4", m4(f, df, x0, root=root, tol=1e-15, maxit=50)),
-            ("Secant", secant(f, sx0, sx1, root=root, tol=1e-15, maxit=50)),
+            ("Newton", newton(f, df, x0, root=root, tol=1e-80, maxit=50)),
+            ("M4", m4(f, df, x0, root=root, tol=1e-80, maxit=50)),
+            ("Secant", secant(f, sx0, sx1, root=root, tol=1e-80, maxit=50)),
         ]:
             rows.append({
                 "function": name,
                 "method": method_name,
-                "root": res["root"],
-                "reference_root": root,
+                "root": float(res["root"]),
+                "reference_root": float(root),
                 "iterations": res["iterations"],
                 "converged": res["converged"],
-                "final_error": abs(res["root"] - root),
+                "final_error": float(abs(res["root"] - root)),
                 "estimated_order": estimate_order(res["errors"]),
             })
     # write csv
@@ -58,16 +61,16 @@ def run():
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
         name = "poly5"
-        f = lambda x: x ** 5 - x - 0.1
-        df = lambda x: 5 * x ** 4 - 1
-        ref = m4(f, df, 0.9, root=None, tol=1e-15, maxit=50)
+        f = lambda x: x ** 5 - x - mpmath.mpf('0.1')
+        df = lambda x: mpmath.mpf('5.0') * x ** 4 - mpmath.mpf('1.0')
+        ref = m4(f, df, mpmath.mpf('0.9'), root=None, tol=1e-80, maxit=50)
         root = ref["root"]
-        rN = newton(f, df, 0.9, root=root, tol=1e-15, maxit=50)
-        rM = m4(f, df, 0.9, root=root, tol=1e-15, maxit=50)
-        rS = secant(f, 0.5, 1.5, root=root, tol=1e-15, maxit=50)
+        rN = newton(f, df, mpmath.mpf('0.9'), root=root, tol=1e-80, maxit=50)
+        rM = m4(f, df, mpmath.mpf('0.9'), root=root, tol=1e-80, maxit=50)
+        rS = secant(f, mpmath.mpf('0.5'), mpmath.mpf('1.5'), root=root, tol=1e-80, maxit=50)
         plt.figure(figsize=(7, 4.5))
         for label, r, marker in [("Newton", rN, "o"), ("M4 (proposed)", rM, "s"), ("Secant", rS, "^")]:
-            errs = [e for e in r["errors"] if e > 0]
+            errs = [float(e) for e in r["errors"] if e > 0]
             plt.semilogy(range(1, len(errs) + 1), errs, marker + "-", label=label)
         plt.xlabel("Iteration")
         plt.ylabel("Absolute error")
