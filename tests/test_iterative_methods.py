@@ -63,6 +63,27 @@ def test_m4_order_approx_4():
     assert 3.0 < order < 5.5, f"estimated order {order}"
 
 
+def test_m4_order_mpmath():
+    import mpmath
+
+    mpmath.mp.dps = 100
+
+    def f(x):
+        return mpmath.exp(x) - mpmath.mpf('2.0')
+
+    def df(x):
+        return mpmath.exp(x)
+
+    x0 = mpmath.mpf('1.0')
+    root = mpmath.log(mpmath.mpf('2.0'))
+
+    r = m4(f, df, x0, root=root, tol=1e-80, maxit=50)
+    order = estimate_order(r["errors"])
+
+    assert order is not None
+    assert 3.8 < order < 4.2, f"estimated order {order}"
+
+
 def test_newton_order_approx_2():
     r = newton(f2, df2, 1.0, root=ROOT2, tol=1e-15, maxit=20)
     order = estimate_order(r["errors"])

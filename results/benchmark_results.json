@@ -3,120 +3,120 @@
     "function": "poly2",
     "method": "Newton",
     "root": 1.4142135623730951,
-    "reference_root": 1.4142135623730954,
-    "iterations": 4,
+    "reference_root": 1.4142135623730951,
+    "iterations": 6,
     "converged": true,
-    "final_error": 2.220446049250313e-16,
-    "estimated_order": 1.9997864171480206
+    "final_error": 2.890329365705053e-98,
+    "estimated_order": 1.9999764758903222
   },
   {
     "function": "poly2",
     "method": "M4",
-    "root": 1.414213562373095,
-    "reference_root": 1.4142135623730954,
-    "iterations": 2,
+    "root": 1.4142135623730951,
+    "reference_root": 1.4142135623730951,
+    "iterations": 3,
     "converged": true,
-    "final_error": 4.440892098500626e-16,
-    "estimated_order": null
+    "final_error": 3.1757671333562624e-84,
+    "estimated_order": 3.9999993176295865
   },
   {
     "function": "poly2",
     "method": "Secant",
-    "root": 1.4142135623730947,
-    "reference_root": 1.4142135623730954,
-    "iterations": 6,
-    "converged": true,
-    "final_error": 6.661338147750939e-16,
-    "estimated_order": 1.6459207724244973
+    "root": 1.4142135623730951,
+    "reference_root": 1.4142135623730951,
+    "iterations": 9,
+    "converged": false,
+    "final_error": 2.07717460008793e-68,
+    "estimated_order": 1.618587360592993
   },
   {
     "function": "exp",
     "method": "Newton",
     "root": 0.6931471805599453,
-    "reference_root": 0.6931471805599454,
-    "iterations": 5,
-    "converged": true,
-    "final_error": 1.1102230246251565e-16,
-    "estimated_order": 1.9964132878869743
-  },
-  {
-    "function": "exp",
-    "method": "M4",
-    "root": 0.6931471805599454,
-    "reference_root": 0.6931471805599454,
-    "iterations": 3,
-    "converged": true,
-    "final_error": 0.0,
-    "estimated_order": null
-  },
-  {
-    "function": "exp",
-    "method": "Secant",
-    "root": 0.6931471805599454,
-    "reference_root": 0.6931471805599454,
+    "reference_root": 0.6931471805599453,
     "iterations": 7,
     "converged": true,
     "final_error": 0.0,
-    "estimated_order": 1.6270031128423978
+    "estimated_order": 1.9999962984134654
+  },
+  {
+    "function": "exp",
+    "method": "M4",
+    "root": 0.6931471805599453,
+    "reference_root": 0.6931471805599453,
+    "iterations": 4,
+    "converged": true,
+    "final_error": 0.0,
+    "estimated_order": 3.9997109952574594
+  },
+  {
+    "function": "exp",
+    "method": "Secant",
+    "root": 0.6931471805599453,
+    "reference_root": 0.6931471805599453,
+    "iterations": 9,
+    "converged": false,
+    "final_error": 2.4353001314595825e-56,
+    "estimated_order": 1.6175087399395818
   },
   {
     "function": "cos",
     "method": "Newton",
     "root": 0.7390851332151607,
     "reference_root": 0.7390851332151607,
-    "iterations": 4,
+    "iterations": 7,
     "converged": true,
-    "final_error": 0.0,
-    "estimated_order": 1.99700951214663
+    "final_error": 7.143671195514219e-102,
+    "estimated_order": 1.9999994975072617
   },
   {
     "function": "cos",
     "method": "M4",
     "root": 0.7390851332151607,
     "reference_root": 0.7390851332151607,
-    "iterations": 3,
+    "iterations": 4,
     "converged": true,
-    "final_error": 0.0,
-    "estimated_order": null
+    "final_error": 1.4287342391028437e-101,
+    "estimated_order": 3.9999517747373545
   },
   {
     "function": "cos",
     "method": "Secant",
     "root": 0.7390851332151607,
     "reference_root": 0.7390851332151607,
-    "iterations": 6,
-    "converged": true,
-    "final_error": 0.0,
-    "estimated_order": 1.6335254468824358
+    "iterations": 8,
+    "converged": false,
+    "final_error": 1.4489047571587527e-61,
+    "estimated_order": 1.6173902453243003
   },
   {
     "function": "poly5",
     "method": "Newton",
     "root": 1.0235771425444427,
-    "reference_root": 1.0235771425444429,
-    "iterations": 6,
-    "converged": true,
-    "final_error": 2.220446049250313e-16,
-    "estimated_order": 1.979451397000384
-  },
-  {
-    "function": "poly5",
-    "method": "M4",
-    "root": 1.0235771425444427,
-    "reference_root": 1.0235771425444429,
-    "iterations": 4,
-    "converged": true,
-    "final_error": 2.220446049250313e-16,
-    "estimated_order": 3.711604011850257
-  },
-  {
-    "function": "poly5",
-    "method": "Secant",
-    "root": -0.10001000500350286,
-    "reference_root": 1.0235771425444429,
+    "reference_root": 1.0235771425444427,
     "iterations": 8,
     "converged": true,
-    "final_error": 1.1235871475479458,
-    "estimated_order": 3.3579216594050046e-05
+    "final_error": 0.0,
+    "estimated_order": 1.9999968280000373
+  },
+  {
+    "function": "poly5",
+    "method": "M4",
+    "root": 1.0235771425444427,
+    "reference_root": 1.0235771425444427,
+    "iterations": 5,
+    "converged": true,
+    "final_error": 0.0,
+    "estimated_order": 3.9534293658895496
+  },
+  {
+    "function": "poly5",
+    "method": "Secant",
+    "root": -0.10001000500350285,
+    "reference_root": 1.0235771425444427,
+    "iterations": 9,
+    "converged": false,
+    "final_error": 1.1235871475479455,
+    "estimated_order": -3.345955163363678e-06
   }
 ]
