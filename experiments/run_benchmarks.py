@@ -28,22 +28,32 @@ TESTS = [
 def run():
     rows = []
     for name, f, df, x0, sx0, sx1 in TESTS:
-        # reference root via m4
-        ref = m4(f, df, x0, root=None, tol=1e-80, maxit=50)
-        root = ref["root"]
-        for method_name, res in [
-            ("Newton", newton(f, df, x0, root=root, tol=1e-80, maxit=50)),
-            ("M4", m4(f, df, x0, root=root, tol=1e-80, maxit=50)),
-            ("Secant", secant(f, sx0, sx1, root=root, tol=1e-80, maxit=50)),
+        # Find reference root for each method individually, since they might converge to different roots (e.g. poly5 secant)
+        ref_n = newton(f, df, x0, root=None, tol=1e-80, maxit=50)
+        root_n = ref_n["root"]
+        res_n = newton(f, df, x0, root=root_n, tol=1e-80, maxit=50)
+
+        ref_m = m4(f, df, x0, root=None, tol=1e-80, maxit=50)
+        root_m = ref_m["root"]
+        res_m = m4(f, df, x0, root=root_m, tol=1e-80, maxit=50)
+
+        ref_s = secant(f, sx0, sx1, root=None, tol=1e-80, maxit=50)
+        root_s = ref_s["root"]
+        res_s = secant(f, sx0, sx1, root=root_s, tol=1e-80, maxit=50)
+
+        for method_name, res, target_root in [
+            ("Newton", res_n, root_n),
+            ("M4", res_m, root_m),
+            ("Secant", res_s, root_s),
         ]:
             rows.append({
                 "function": name,
                 "method": method_name,
                 "root": float(res["root"]),
-                "reference_root": float(root),
+                "reference_root": float(target_root),
                 "iterations": res["iterations"],
                 "converged": res["converged"],
-                "final_error": float(abs(res["root"] - root)),
+                "final_error": float(abs(res["root"] - target_root)),
                 "estimated_order": estimate_order(res["errors"]),
             })
     # write csv
@@ -63,11 +73,15 @@ def run():
         name = "poly5"
         f = lambda x: x ** 5 - x - mpmath.mpf('0.1')
         df = lambda x: mpmath.mpf('5.0') * x ** 4 - mpmath.mpf('1.0')
-        ref = m4(f, df, mpmath.mpf('0.9'), root=None, tol=1e-80, maxit=50)
-        root = ref["root"]
-        rN = newton(f, df, mpmath.mpf('0.9'), root=root, tol=1e-80, maxit=50)
-        rM = m4(f, df, mpmath.mpf('0.9'), root=root, tol=1e-80, maxit=50)
-        rS = secant(f, mpmath.mpf('0.5'), mpmath.mpf('1.5'), root=root, tol=1e-80, maxit=50)
+        # Use individual reference roots for error convergence plotting
+        ref_N = newton(f, df, mpmath.mpf('0.9'), root=None, tol=1e-80, maxit=50)
+        rN = newton(f, df, mpmath.mpf('0.9'), root=ref_N["root"], tol=1e-80, maxit=50)
+
+        ref_M = m4(f, df, mpmath.mpf('0.9'), root=None, tol=1e-80, maxit=50)
+        rM = m4(f, df, mpmath.mpf('0.9'), root=ref_M["root"], tol=1e-80, maxit=50)
+
+        ref_S = secant(f, mpmath.mpf('0.5'), mpmath.mpf('1.5'), root=None, tol=1e-80, maxit=50)
+        rS = secant(f, mpmath.mpf('0.5'), mpmath.mpf('1.5'), root=ref_S["root"], tol=1e-80, maxit=50)
         plt.figure(figsize=(7, 4.5))
         for label, r, marker in [("Newton", rN, "o"), ("M4 (proposed)", rM, "s"), ("Secant", rS, "^")]:
             errs = [float(e) for e in r["errors"] if e > 0]
