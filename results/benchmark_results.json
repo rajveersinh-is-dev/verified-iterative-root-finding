@@ -25,9 +25,9 @@
     "root": 1.4142135623730951,
     "reference_root": 1.4142135623730951,
     "iterations": 9,
-    "converged": false,
-    "final_error": 2.07717460008793e-68,
-    "estimated_order": 1.618587360592993
+    "converged": true,
+    "final_error": 0.0,
+    "estimated_order": 1.6165803305414204
   },
   {
     "function": "exp",
@@ -55,9 +55,9 @@
     "root": 0.6931471805599453,
     "reference_root": 0.6931471805599453,
     "iterations": 9,
-    "converged": false,
-    "final_error": 2.4353001314595825e-56,
-    "estimated_order": 1.6175087399395818
+    "converged": true,
+    "final_error": 0.0,
+    "estimated_order": 1.6194045758577889
   },
   {
     "function": "cos",
@@ -85,9 +85,9 @@
     "root": 0.7390851332151607,
     "reference_root": 0.7390851332151607,
     "iterations": 8,
-    "converged": false,
-    "final_error": 1.4489047571587527e-61,
-    "estimated_order": 1.6173902453243003
+    "converged": true,
+    "final_error": 0.0,
+    "estimated_order": 1.619712850864479
   },
   {
     "function": "poly5",
@@ -113,10 +113,10 @@
     "function": "poly5",
     "method": "Secant",
     "root": -0.10001000500350285,
-    "reference_root": 1.0235771425444427,
+    "reference_root": -0.10001000500350285,
     "iterations": 9,
-    "converged": false,
-    "final_error": 1.1235871475479455,
-    "estimated_order": -3.345955163363678e-06
+    "converged": true,
+    "final_error": 0.0,
+    "estimated_order": 1.5775427284402264
   }
 ]
