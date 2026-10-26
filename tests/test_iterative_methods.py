@@ -124,3 +124,54 @@ def test_m4_exact_root():
 def test_estimate_order_insufficient():
     assert estimate_order([]) is None
     assert estimate_order([1.0]) is None
+
+
+def test_complex_roots():
+    def f(x):
+        return x**2 + 1.0
+
+    def df(x):
+        return 2.0 * x
+
+    r_m4 = m4(f, df, 1.0+1.0j, tol=1e-12)
+    assert r_m4["converged"]
+    assert abs(r_m4["root"] - 1.0j) < 1e-11
+
+    r_newton = newton(f, df, 1.0+1.0j, tol=1e-12)
+    assert r_newton["converged"]
+    assert abs(r_newton["root"] - 1.0j) < 1e-11
+
+    r_secant = secant(f, 1.0+1.0j, 1.0+0.5j, tol=1e-12)
+    assert r_secant["converged"]
+    assert abs(r_secant["root"] - 1.0j) < 1e-11
+
+
+def test_mpmath_complex():
+    import mpmath
+    mpmath.mp.dps = 30
+
+    def f(x):
+        return x**2 + 1.0
+
+    def df(x):
+        return 2.0 * x
+
+    x0 = mpmath.mpc(1.0, 1.0)
+    root = mpmath.mpc(0.0, 1.0)
+
+    r_m4 = m4(f, df, x0, root=root, tol=1e-25)
+    assert r_m4["converged"]
+    assert abs(r_m4["root"] - root) < 1e-24
+
+
+def test_divergent_function_safe_call():
+    import cmath
+    def f(x):
+        return cmath.exp(x)
+    def df(x):
+        return cmath.exp(x)
+
+    # Exponentiating a large number overflows to complex infinity/nan,
+    # safe_call should catch it and stop without throwing an error
+    r = m4(f, df, 1000.0 + 1000.0j, maxit=5)
+    assert not r["converged"]

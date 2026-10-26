@@ -21,7 +21,26 @@ def _safe_call(f: Callable[[Any], Any], x: Any) -> Optional[Any]:
         return None
     if isinstance(v, float) and (math.isnan(v) or math.isinf(v)):
         return None
+    if isinstance(v, complex) and (math.isnan(v.real) or math.isinf(v.real) or math.isnan(v.imag) or math.isinf(v.imag)):
+        return None
+    if hasattr(v, 'ae'): # basic check for mpmath types without importing unless needed
+        try:
+            import mpmath
+            if mpmath.isnan(v) or mpmath.isinf(v):
+                return None
+        except Exception:
+            pass
     return v
+
+
+def _get_real_type(x: Any) -> type:
+    """Get the appropriate real-valued scalar type for setting tolerances."""
+    if isinstance(x, complex) or isinstance(x, int):
+        return float
+    # for mpmath.mpc, the type of its absolute value is mpf
+    if hasattr(x, 'real') and type(x) != type(x.real):
+        return type(x.real)
+    return type(x)
 
 
 def newton(
@@ -35,7 +54,7 @@ def newton(
     """Classical Newton-Raphson method."""
     if isinstance(x0, int):
         x0 = float(x0)
-    T = type(x0)
+    T = _get_real_type(x0)
     xs = [x0]
     errors: List[Any] = []
     converged = False
@@ -74,7 +93,7 @@ def secant(
         x0 = float(x0)
     if isinstance(x1, int):
         x1 = float(x1)
-    T = type(x0)
+    T = _get_real_type(x0)
     xs = [x0, x1]
     errors: List[Any] = []
     converged = False
@@ -123,7 +142,8 @@ def m4(
     """
     if isinstance(x0, int):
         x0 = float(x0)
-    T = type(x0)
+    T = _get_real_type(x0)
+    TypeX = type(x0) if not isinstance(x0, complex) else complex
     xs = [x0]
     errors: List[Any] = []
     converged = False
@@ -144,7 +164,16 @@ def m4(
         # guard against overflow (check if float first)
         if isinstance(t, float) and not math.isfinite(t):
             break
-        correction = (fy / dfx) * (T('1.0') + T('2.0') * t)
+        if isinstance(t, complex) and (not math.isfinite(t.real) or not math.isfinite(t.imag)):
+            break
+        if hasattr(t, 'ae'):
+            try:
+                import mpmath
+                if mpmath.isnan(t) or mpmath.isinf(t):
+                    break
+            except Exception:
+                pass
+        correction = (fy / dfx) * (TypeX('1.0') + TypeX('2.0') * t)
         x_new = y - correction
         xs.append(x_new)
         if root is not None:
