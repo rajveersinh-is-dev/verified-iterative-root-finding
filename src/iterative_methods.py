@@ -12,24 +12,35 @@ import math
 from typing import Callable, Dict, List, Optional, Any
 
 
+def _is_valid(v: Any) -> bool:
+    if v is None:
+        return False
+    if isinstance(v, float) and (math.isnan(v) or math.isinf(v)):
+        return False
+    if isinstance(v, complex):
+        try:
+            import cmath
+            if cmath.isnan(v) or cmath.isinf(v):
+                return False
+        except Exception:
+            if math.isnan(v.real) or math.isinf(v.real) or math.isnan(v.imag) or math.isinf(v.imag):
+                return False
+    if hasattr(v, 'ae'): # basic check for mpmath types
+        try:
+            import mpmath
+            if mpmath.isnan(v) or mpmath.isinf(v):
+                return False
+        except Exception:
+            pass
+    return True
+
 def _safe_call(f: Callable[[Any], Any], x: Any) -> Optional[Any]:
     try:
         v = f(x)
     except Exception:
         return None
-    if v is None:
+    if not _is_valid(v):
         return None
-    if isinstance(v, float) and (math.isnan(v) or math.isinf(v)):
-        return None
-    if isinstance(v, complex) and (math.isnan(v.real) or math.isinf(v.real) or math.isnan(v.imag) or math.isinf(v.imag)):
-        return None
-    if hasattr(v, 'ae'): # basic check for mpmath types without importing unless needed
-        try:
-            import mpmath
-            if mpmath.isnan(v) or mpmath.isinf(v):
-                return None
-        except Exception:
-            pass
     return v
 
 
@@ -63,7 +74,12 @@ def newton(
         dfx = _safe_call(df, xs[-1])
         if fx is None or dfx is None or abs(dfx) < T('1e-30'):
             break
-        x_new = xs[-1] - fx / dfx
+        try:
+            x_new = xs[-1] - fx / dfx
+        except Exception:
+            break
+        if not _is_valid(x_new):
+            break
         xs.append(x_new)
         if root is not None:
             errors.append(abs(x_new - root))
@@ -102,10 +118,15 @@ def secant(
         f1 = _safe_call(f, xs[-1])
         if f0 is None or f1 is None:
             break
-        denom = f1 - f0
-        if abs(denom) < T('1e-30'):
+        try:
+            denom = f1 - f0
+            if abs(denom) < T('1e-30'):
+                break
+            x_new = xs[-1] - f1 * (xs[-1] - xs[-2]) / denom
+        except Exception:
             break
-        x_new = xs[-1] - f1 * (xs[-1] - xs[-2]) / denom
+        if not _is_valid(x_new):
+            break
         xs.append(x_new)
         if root is not None:
             errors.append(abs(x_new - root))
@@ -153,28 +174,41 @@ def m4(
         dfx = _safe_call(df, x)
         if fx is None or dfx is None or abs(dfx) < T('1e-30'):
             break
-        if abs(fx) < T('1e-300'):
-            converged = True
+        try:
+            if abs(fx) < T('1e-300'):
+                converged = True
+                break
+        except Exception:
+            # Fallback for types where 1e-300 might cause issues (e.g. some decimals)
+            # or if absolute value comparison fails
+            pass
+
+        try:
+            y = x - fx / dfx
+        except Exception:
             break
-        y = x - fx / dfx
+        if not _is_valid(y):
+            break
+
         fy = _safe_call(f, y)
         if fy is None:
             break
-        t = fy / fx
-        # guard against overflow (check if float first)
-        if isinstance(t, float) and not math.isfinite(t):
+
+        try:
+            t = fy / fx
+        except Exception:
             break
-        if isinstance(t, complex) and (not math.isfinite(t.real) or not math.isfinite(t.imag)):
+        if not _is_valid(t):
             break
-        if hasattr(t, 'ae'):
-            try:
-                import mpmath
-                if mpmath.isnan(t) or mpmath.isinf(t):
-                    break
-            except Exception:
-                pass
-        correction = (fy / dfx) * (TypeX('1.0') + TypeX('2.0') * t)
-        x_new = y - correction
+
+        try:
+            correction = (fy / dfx) * (TypeX('1.0') + TypeX('2.0') * t)
+            x_new = y - correction
+        except Exception:
+            break
+        if not _is_valid(x_new):
+            break
+
         xs.append(x_new)
         if root is not None:
             errors.append(abs(x_new - root))

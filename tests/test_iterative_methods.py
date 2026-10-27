@@ -175,3 +175,60 @@ def test_divergent_function_safe_call():
     # safe_call should catch it and stop without throwing an error
     r = m4(f, df, 1000.0 + 1000.0j, maxit=5)
     assert not r["converged"]
+
+def test_newton_overflow_protection():
+    # test division overflow
+    def f1(x): return 1e200
+    def df1(x): return 1e-200
+
+    r1 = newton(f1, df1, 0.0)
+    assert not r1["converged"]
+    assert r1["root"] == 0.0
+
+    # test evaluation overflow
+    def f2(x): return x**400
+    def df2(x): return 400 * x**399
+
+    r2 = newton(f2, df2, 10.0)
+    assert not r2["converged"]
+
+def test_secant_zero_division():
+    def f(x):
+        if x == 0.0: return 1.0
+        if x == 1.0: return 1.0 # causes denom to be 0
+        return x
+
+    r = secant(f, 0.0, 1.0)
+    assert not r["converged"]
+
+def test_m4_math_domain_error():
+    # math.log(-1) raises ValueError (math domain error)
+    def f(x):
+        return math.log(x)
+    def df(x):
+        return 1.0/x
+
+    r = m4(f, df, -1.0)
+    assert not r["converged"]
+    assert r["iterations"] == 0
+    assert r["root"] == -1.0
+
+def test_complex_overflow_protection():
+    def f(x): return complex(1e200, 1e200)
+    def df(x): return complex(1e-200, 1e-200)
+
+    r_newton = newton(f, df, complex(0, 0))
+    assert not r_newton["converged"]
+
+    r_m4 = m4(f, df, complex(0, 0))
+    assert not r_m4["converged"]
+
+def test_decimal_types_fallback():
+    from decimal import Decimal
+    def f(x): return x**2 - Decimal('2.0')
+    def df(x): return Decimal('2.0') * x
+
+    r = m4(f, df, Decimal('1.5'))
+    assert r["converged"]
+    # should be close to sqrt(2)
+    assert abs(float(r["root"]) - 1.4142135623730951) < 1e-12
