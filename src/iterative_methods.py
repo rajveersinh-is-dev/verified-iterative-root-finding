@@ -34,12 +34,16 @@ def _is_valid(v: Any) -> bool:
             pass
     return True
 
-def _safe_call(f: Callable[[Any], Any], x: Any) -> Optional[Any]:
+def _safe_call(f: Callable[[Any], Any], x: Any, verbose: bool = False, context: str = "") -> Optional[Any]:
     try:
         v = f(x)
-    except Exception:
+    except Exception as e:
+        if verbose:
+            print(f"[{context}] Exception during evaluation: {e}")
         return None
     if not _is_valid(v):
+        if verbose:
+            print(f"[{context}] Invalid value returned: {v}")
         return None
     return v
 
@@ -61,6 +65,7 @@ def newton(
     root: Optional[Any] = None,
     tol: float = 1e-14,
     maxit: int = 100,
+    verbose: bool = False,
 ) -> Dict:
     """Classical Newton-Raphson method."""
     if isinstance(x0, int):
@@ -70,15 +75,23 @@ def newton(
     errors: List[Any] = []
     converged = False
     for _ in range(maxit):
-        fx = _safe_call(f, xs[-1])
-        dfx = _safe_call(df, xs[-1])
-        if fx is None or dfx is None or abs(dfx) < T('1e-30'):
+        fx = _safe_call(f, xs[-1], verbose=verbose, context="Newton f(x)")
+        dfx = _safe_call(df, xs[-1], verbose=verbose, context="Newton df(x)")
+        if fx is None or dfx is None:
+            break
+        if abs(dfx) < T('1e-30'):
+            if verbose:
+                print(f"[Newton] Derivative too small: {dfx}")
             break
         try:
             x_new = xs[-1] - fx / dfx
-        except Exception:
+        except Exception as e:
+            if verbose:
+                print(f"[Newton] Exception during step update: {e}")
             break
         if not _is_valid(x_new):
+            if verbose:
+                print(f"[Newton] Invalid updated value: {x_new}")
             break
         xs.append(x_new)
         if root is not None:
@@ -103,6 +116,7 @@ def secant(
     root: Optional[Any] = None,
     tol: float = 1e-14,
     maxit: int = 100,
+    verbose: bool = False,
 ) -> Dict:
     """Secant method (derivative-free)."""
     if isinstance(x0, int):
@@ -114,18 +128,24 @@ def secant(
     errors: List[Any] = []
     converged = False
     for _ in range(maxit):
-        f0 = _safe_call(f, xs[-2])
-        f1 = _safe_call(f, xs[-1])
+        f0 = _safe_call(f, xs[-2], verbose=verbose, context="Secant f(x0)")
+        f1 = _safe_call(f, xs[-1], verbose=verbose, context="Secant f(x1)")
         if f0 is None or f1 is None:
             break
         try:
             denom = f1 - f0
             if abs(denom) < T('1e-30'):
+                if verbose:
+                    print(f"[Secant] Denominator too small: {denom}")
                 break
             x_new = xs[-1] - f1 * (xs[-1] - xs[-2]) / denom
-        except Exception:
+        except Exception as e:
+            if verbose:
+                print(f"[Secant] Exception during step update: {e}")
             break
         if not _is_valid(x_new):
+            if verbose:
+                print(f"[Secant] Invalid updated value: {x_new}")
             break
         xs.append(x_new)
         if root is not None:
@@ -150,6 +170,7 @@ def m4(
     root: Optional[Any] = None,
     tol: float = 1e-14,
     maxit: int = 100,
+    verbose: bool = False,
 ) -> Dict:
     """Proposed fourth-order method.
 
@@ -170,9 +191,13 @@ def m4(
     converged = False
     for _ in range(maxit):
         x = xs[-1]
-        fx = _safe_call(f, x)
-        dfx = _safe_call(df, x)
-        if fx is None or dfx is None or abs(dfx) < T('1e-30'):
+        fx = _safe_call(f, x, verbose=verbose, context="M4 f(x)")
+        dfx = _safe_call(df, x, verbose=verbose, context="M4 df(x)")
+        if fx is None or dfx is None:
+            break
+        if abs(dfx) < T('1e-30'):
+            if verbose:
+                print(f"[M4] Derivative too small: {dfx}")
             break
         try:
             if abs(fx) < T('1e-300'):
@@ -185,28 +210,40 @@ def m4(
 
         try:
             y = x - fx / dfx
-        except Exception:
+        except Exception as e:
+            if verbose:
+                print(f"[M4] Exception computing Newton step (y): {e}")
             break
         if not _is_valid(y):
+            if verbose:
+                print(f"[M4] Invalid Newton step (y): {y}")
             break
 
-        fy = _safe_call(f, y)
+        fy = _safe_call(f, y, verbose=verbose, context="M4 f(y)")
         if fy is None:
             break
 
         try:
             t = fy / fx
-        except Exception:
+        except Exception as e:
+            if verbose:
+                print(f"[M4] Exception computing ratio (t): {e}")
             break
         if not _is_valid(t):
+            if verbose:
+                print(f"[M4] Invalid ratio (t): {t}")
             break
 
         try:
             correction = (fy / dfx) * (TypeX('1.0') + TypeX('2.0') * t)
             x_new = y - correction
-        except Exception:
+        except Exception as e:
+            if verbose:
+                print(f"[M4] Exception computing correction: {e}")
             break
         if not _is_valid(x_new):
+            if verbose:
+                print(f"[M4] Invalid updated value: {x_new}")
             break
 
         xs.append(x_new)
