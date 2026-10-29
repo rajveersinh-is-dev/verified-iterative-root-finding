@@ -233,7 +233,10 @@ def test_decimal_types_fallback():
     # should be close to sqrt(2)
     assert abs(float(r["root"]) - 1.4142135623730951) < 1e-12
 
-def test_verbose_logging(capsys):
+def test_verbose_logging(caplog):
+    import logging
+    caplog.set_level(logging.DEBUG)
+
     def f(x): return x**2 + 1.0
     def df(x): return 0.0  # Force derivative too small
 
@@ -247,7 +250,6 @@ def test_verbose_logging(capsys):
     r_secant = secant(f_secant, 0.0, 1.0, verbose=True)
     assert not r_secant["converged"]
 
-    captured = capsys.readouterr()
-    assert "[Newton] Derivative too small:" in captured.out
-    assert "[M4] Derivative too small:" in captured.out
-    assert "[Secant] Denominator too small:" in captured.out
+    assert "[Newton] Derivative too small:" in caplog.text
+    assert "[M4] Derivative too small:" in caplog.text
+    assert "[Secant] Denominator too small:" in caplog.text
