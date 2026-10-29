@@ -8,9 +8,11 @@ All methods return a result dictionary with keys:
 
 from __future__ import annotations
 
+import logging
 import math
 from typing import Callable, Dict, List, Optional, Any
 
+logger = logging.getLogger(__name__)
 
 def _is_valid(v: Any) -> bool:
     if v is None:
@@ -39,11 +41,11 @@ def _safe_call(f: Callable[[Any], Any], x: Any, verbose: bool = False, context: 
         v = f(x)
     except Exception as e:
         if verbose:
-            print(f"[{context}] Exception during evaluation: {e}")
+            logger.debug(f"[{context}] Exception during evaluation: {e}")
         return None
     if not _is_valid(v):
         if verbose:
-            print(f"[{context}] Invalid value returned: {v}")
+            logger.debug(f"[{context}] Invalid value returned: {v}")
         return None
     return v
 
@@ -81,17 +83,17 @@ def newton(
             break
         if abs(dfx) < T('1e-30'):
             if verbose:
-                print(f"[Newton] Derivative too small: {dfx}")
+                logger.debug(f"[Newton] Derivative too small: {dfx}")
             break
         try:
             x_new = xs[-1] - fx / dfx
         except Exception as e:
             if verbose:
-                print(f"[Newton] Exception during step update: {e}")
+                logger.debug(f"[Newton] Exception during step update: {e}")
             break
         if not _is_valid(x_new):
             if verbose:
-                print(f"[Newton] Invalid updated value: {x_new}")
+                logger.debug(f"[Newton] Invalid updated value: {x_new}")
             break
         xs.append(x_new)
         if root is not None:
@@ -136,16 +138,16 @@ def secant(
             denom = f1 - f0
             if abs(denom) < T('1e-30'):
                 if verbose:
-                    print(f"[Secant] Denominator too small: {denom}")
+                    logger.debug(f"[Secant] Denominator too small: {denom}")
                 break
             x_new = xs[-1] - f1 * (xs[-1] - xs[-2]) / denom
         except Exception as e:
             if verbose:
-                print(f"[Secant] Exception during step update: {e}")
+                logger.debug(f"[Secant] Exception during step update: {e}")
             break
         if not _is_valid(x_new):
             if verbose:
-                print(f"[Secant] Invalid updated value: {x_new}")
+                logger.debug(f"[Secant] Invalid updated value: {x_new}")
             break
         xs.append(x_new)
         if root is not None:
@@ -197,7 +199,7 @@ def m4(
             break
         if abs(dfx) < T('1e-30'):
             if verbose:
-                print(f"[M4] Derivative too small: {dfx}")
+                logger.debug(f"[M4] Derivative too small: {dfx}")
             break
         try:
             if abs(fx) < T('1e-300'):
@@ -212,11 +214,11 @@ def m4(
             y = x - fx / dfx
         except Exception as e:
             if verbose:
-                print(f"[M4] Exception computing Newton step (y): {e}")
+                logger.debug(f"[M4] Exception computing Newton step (y): {e}")
             break
         if not _is_valid(y):
             if verbose:
-                print(f"[M4] Invalid Newton step (y): {y}")
+                logger.debug(f"[M4] Invalid Newton step (y): {y}")
             break
 
         fy = _safe_call(f, y, verbose=verbose, context="M4 f(y)")
@@ -227,11 +229,11 @@ def m4(
             t = fy / fx
         except Exception as e:
             if verbose:
-                print(f"[M4] Exception computing ratio (t): {e}")
+                logger.debug(f"[M4] Exception computing ratio (t): {e}")
             break
         if not _is_valid(t):
             if verbose:
-                print(f"[M4] Invalid ratio (t): {t}")
+                logger.debug(f"[M4] Invalid ratio (t): {t}")
             break
 
         try:
@@ -239,11 +241,11 @@ def m4(
             x_new = y - correction
         except Exception as e:
             if verbose:
-                print(f"[M4] Exception computing correction: {e}")
+                logger.debug(f"[M4] Exception computing correction: {e}")
             break
         if not _is_valid(x_new):
             if verbose:
-                print(f"[M4] Invalid updated value: {x_new}")
+                logger.debug(f"[M4] Invalid updated value: {x_new}")
             break
 
         xs.append(x_new)
