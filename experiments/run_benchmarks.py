@@ -17,12 +17,32 @@ OUT.mkdir(exist_ok=True)
 FIG = Path(__file__).resolve().parents[1] / "figures"
 FIG.mkdir(exist_ok=True)
 
-TESTS = [
-    ("poly2", lambda x: x * x - mpmath.mpf('2.0'), lambda x: mpmath.mpf('2.0') * x, mpmath.mpf('1.5'), mpmath.mpf('2.0'), mpmath.mpf('1.0')),
-    ("exp", lambda x: mpmath.exp(x) - mpmath.mpf('2.0'), lambda x: mpmath.exp(x), mpmath.mpf('1.0'), mpmath.mpf('2.0'), mpmath.mpf('1.0')),
-    ("cos", lambda x: mpmath.cos(x) - x, lambda x: -mpmath.sin(x) - mpmath.mpf('1.0'), mpmath.mpf('0.5'), mpmath.mpf('1.5'), mpmath.mpf('0.5')),
-    ("poly5", lambda x: x ** 5 - x - mpmath.mpf('0.1'), lambda x: mpmath.mpf('5.0') * x ** 4 - mpmath.mpf('1.0'), mpmath.mpf('0.9'), mpmath.mpf('1.5'), mpmath.mpf('0.5')),
-]
+import sympy as sp
+
+CONFIG_PATH = Path(__file__).resolve().parents[0] / "benchmark_config.json"
+
+def load_tests():
+    with open(CONFIG_PATH, 'r') as f:
+        config = json.load(f)
+
+    tests = []
+    x = sp.Symbol('x')
+    for item in config:
+        expr = sp.sympify(item['expr'], rational=True)
+        dexpr = sp.diff(expr, x)
+
+        f_lam = sp.lambdify(x, expr, modules='mpmath')
+        df_lam = sp.lambdify(x, dexpr, modules='mpmath')
+
+        x0 = mpmath.mpf(item['x0'])
+        sx0 = mpmath.mpf(item['sx0'])
+        sx1 = mpmath.mpf(item['sx1'])
+
+        tests.append((item['name'], f_lam, df_lam, x0, sx0, sx1))
+
+    return tests
+
+TESTS = load_tests()
 
 
 def run():
