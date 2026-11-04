@@ -10,9 +10,10 @@ from __future__ import annotations
 
 import logging
 import math
-from typing import Callable, Dict, List, Optional, Any
+from typing import Any, Callable, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
+
 
 def _is_valid(v: Any) -> bool:
     if v is None:
@@ -22,21 +23,31 @@ def _is_valid(v: Any) -> bool:
     if isinstance(v, complex):
         try:
             import cmath
+
             if cmath.isnan(v) or cmath.isinf(v):
                 return False
         except Exception:
-            if math.isnan(v.real) or math.isinf(v.real) or math.isnan(v.imag) or math.isinf(v.imag):
+            if (
+                math.isnan(v.real)
+                or math.isinf(v.real)
+                or math.isnan(v.imag)
+                or math.isinf(v.imag)
+            ):
                 return False
-    if hasattr(v, 'ae'): # basic check for mpmath types
+    if hasattr(v, "ae"):  # basic check for mpmath types
         try:
-            import mpmath
+            import mpmath  # type: ignore
+
             if mpmath.isnan(v) or mpmath.isinf(v):
                 return False
         except Exception:
             pass
     return True
 
-def _safe_call(f: Callable[[Any], Any], x: Any, verbose: bool = False, context: str = "") -> Optional[Any]:
+
+def _safe_call(
+    f: Callable[[Any], Any], x: Any, verbose: bool = False, context: str = ""
+) -> Optional[Any]:
     try:
         v = f(x)
     except Exception as e:
@@ -55,7 +66,7 @@ def _get_real_type(x: Any) -> type:
     if isinstance(x, complex) or isinstance(x, int):
         return float
     # for mpmath.mpc, the type of its absolute value is mpf
-    if hasattr(x, 'real') and type(x) != type(x.real):
+    if hasattr(x, "real") and type(x) != type(x.real):
         return type(x.real)
     return type(x)
 
@@ -81,7 +92,7 @@ def newton(
         dfx = _safe_call(df, xs[-1], verbose=verbose, context="Newton df(x)")
         if fx is None or dfx is None:
             break
-        if abs(dfx) < T('1e-30'):
+        if abs(dfx) < T("1e-30"):
             if verbose:
                 logger.debug(f"[Newton] Derivative too small: {dfx}")
             break
@@ -98,7 +109,9 @@ def newton(
         xs.append(x_new)
         if root is not None:
             errors.append(abs(x_new - root))
-        if abs(x_new - xs[-2]) < T(str(tol)) or (root is not None and errors[-1] < T(str(tol))):
+        if abs(x_new - xs[-2]) < T(str(tol)) or (
+            root is not None and errors[-1] < T(str(tol))
+        ):
             converged = True
             break
     return {
@@ -136,7 +149,7 @@ def secant(
             break
         try:
             denom = f1 - f0
-            if abs(denom) < T('1e-30'):
+            if abs(denom) < T("1e-30"):
                 if verbose:
                     logger.debug(f"[Secant] Denominator too small: {denom}")
                 break
@@ -152,7 +165,9 @@ def secant(
         xs.append(x_new)
         if root is not None:
             errors.append(abs(x_new - root))
-        if abs(xs[-1] - xs[-2]) < T(str(tol)) or (root is not None and errors and errors[-1] < T(str(tol))):
+        if abs(xs[-1] - xs[-2]) < T(str(tol)) or (
+            root is not None and errors and errors[-1] < T(str(tol))
+        ):
             converged = True
             break
     return {
@@ -197,12 +212,12 @@ def m4(
         dfx = _safe_call(df, x, verbose=verbose, context="M4 df(x)")
         if fx is None or dfx is None:
             break
-        if abs(dfx) < T('1e-30'):
+        if abs(dfx) < T("1e-30"):
             if verbose:
                 logger.debug(f"[M4] Derivative too small: {dfx}")
             break
         try:
-            if abs(fx) < T('1e-300'):
+            if abs(fx) < T("1e-300"):
                 converged = True
                 break
         except Exception:
@@ -237,7 +252,7 @@ def m4(
             break
 
         try:
-            correction = (fy / dfx) * (TypeX('1.0') + TypeX('2.0') * t)
+            correction = (fy / dfx) * (TypeX("1.0") + TypeX("2.0") * t)
             x_new = y - correction
         except Exception as e:
             if verbose:
@@ -251,7 +266,9 @@ def m4(
         xs.append(x_new)
         if root is not None:
             errors.append(abs(x_new - root))
-        if abs(x_new - xs[-2]) < T(str(tol)) or (root is not None and errors and errors[-1] < T(str(tol))):
+        if abs(x_new - xs[-2]) < T(str(tol)) or (
+            root is not None and errors and errors[-1] < T(str(tol))
+        ):
             converged = True
             break
     return {

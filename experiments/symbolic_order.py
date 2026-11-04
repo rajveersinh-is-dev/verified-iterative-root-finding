@@ -3,12 +3,12 @@
 Uses sympy Taylor expansion to confirm the error recurrence e_{n+1} ~ C e_n^4.
 """
 
-import sympy as sp
+import sympy as sp  # type: ignore
 
-e, lam = sp.symbols('e lam')
-A2, A3, A4, A5 = sp.symbols('A2 A3 A4 A5')
+e, lam = sp.symbols("e lam")
+A2, A3, A4, A5 = sp.symbols("A2 A3 A4 A5")
 
-f_expr = lam * (e + A2*e**2 + A3*e**3 + A4*e**4 + A5*e**5)
+f_expr = lam * (e + A2 * e**2 + A3 * e**3 + A4 * e**4 + A5 * e**5)
 df_expr = sp.diff(f_expr, e)
 
 # Newton error: e_y = e - f(x)/f'(x)
@@ -24,7 +24,7 @@ ratio_expr = sp.series(fy_expr / df_expr, e, 0, 6).removeO()
 t_expr = sp.series(fy_expr / f_expr, e, 0, 6).removeO()
 
 # H(t) = 1 + 2 t
-H_expr = 1 + 2*t_expr
+H_expr = 1 + 2 * t_expr
 
 err = sp.series(e_y - ratio_expr * H_expr, e, 0, 6).removeO()
 print("error expansion:", err)
@@ -36,4 +36,6 @@ print("coeff e^4:", coeff_e4)
 assert err.coeff(e, 1) == 0
 assert err.coeff(e, 2) == 0
 assert err.coeff(e, 3) == 0
-print(f"VERIFIED: terms up to e^3 vanish; leading term is O(e^4) with coeff {coeff_e4}.")
+print(
+    f"VERIFIED: terms up to e^3 vanish; leading term is O(e^4) with coeff {coeff_e4}."
+)

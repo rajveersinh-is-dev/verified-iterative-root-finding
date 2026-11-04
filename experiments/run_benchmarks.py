@@ -3,12 +3,13 @@
 import csv
 import json
 import math
-import mpmath
 import sys
 from pathlib import Path
 
+import mpmath  # type: ignore
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-from iterative_methods import newton, secant, m4, estimate_order
+from iterative_methods import estimate_order, m4, newton, secant
 
 mpmath.mp.dps = 100
 
@@ -17,30 +18,32 @@ OUT.mkdir(exist_ok=True)
 FIG = Path(__file__).resolve().parents[1] / "figures"
 FIG.mkdir(exist_ok=True)
 
-import sympy as sp
+import sympy as sp  # type: ignore
 
 CONFIG_PATH = Path(__file__).resolve().parents[0] / "benchmark_config.json"
 
+
 def load_tests():
-    with open(CONFIG_PATH, 'r') as f:
+    with open(CONFIG_PATH, "r") as f:
         config = json.load(f)
 
     tests = []
-    x = sp.Symbol('x')
+    x = sp.Symbol("x")
     for item in config:
-        expr = sp.sympify(item['expr'], rational=True)
+        expr = sp.sympify(item["expr"], rational=True)
         dexpr = sp.diff(expr, x)
 
-        f_lam = sp.lambdify(x, expr, modules='mpmath')
-        df_lam = sp.lambdify(x, dexpr, modules='mpmath')
+        f_lam = sp.lambdify(x, expr, modules="mpmath")
+        df_lam = sp.lambdify(x, dexpr, modules="mpmath")
 
-        x0 = mpmath.mpf(item['x0'])
-        sx0 = mpmath.mpf(item['sx0'])
-        sx1 = mpmath.mpf(item['sx1'])
+        x0 = mpmath.mpf(item["x0"])
+        sx0 = mpmath.mpf(item["sx0"])
+        sx1 = mpmath.mpf(item["sx1"])
 
-        tests.append((item['name'], f_lam, df_lam, x0, sx0, sx1))
+        tests.append((item["name"], f_lam, df_lam, x0, sx0, sx1))
 
     return tests
+
 
 TESTS = load_tests()
 
@@ -66,16 +69,18 @@ def run():
             ("M4", res_m, root_m),
             ("Secant", res_s, root_s),
         ]:
-            rows.append({
-                "function": name,
-                "method": method_name,
-                "root": float(res["root"]),
-                "reference_root": float(target_root),
-                "iterations": res["iterations"],
-                "converged": res["converged"],
-                "final_error": float(abs(res["root"] - target_root)),
-                "estimated_order": estimate_order(res["errors"]),
-            })
+            rows.append(
+                {
+                    "function": name,
+                    "method": method_name,
+                    "root": float(res["root"]),
+                    "reference_root": float(target_root),
+                    "iterations": res["iterations"],
+                    "converged": res["converged"],
+                    "final_error": float(abs(res["root"] - target_root)),
+                    "estimated_order": estimate_order(res["errors"]),
+                }
+            )
     # write csv
     csv_path = OUT / "benchmark_results.csv"
     with csv_path.open("w", newline="") as fh:
@@ -88,22 +93,37 @@ def run():
     # figure: convergence of errors for 'poly5'
     try:
         import matplotlib
+
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
+
         name = "poly5"
-        f = lambda x: x ** 5 - x - mpmath.mpf('0.1')
-        df = lambda x: mpmath.mpf('5.0') * x ** 4 - mpmath.mpf('1.0')
+        f = lambda x: x**5 - x - mpmath.mpf("0.1")
+        df = lambda x: mpmath.mpf("5.0") * x**4 - mpmath.mpf("1.0")
         # Use individual reference roots for error convergence plotting
-        ref_N = newton(f, df, mpmath.mpf('0.9'), root=None, tol=1e-80, maxit=50)
-        rN = newton(f, df, mpmath.mpf('0.9'), root=ref_N["root"], tol=1e-80, maxit=50)
+        ref_N = newton(f, df, mpmath.mpf("0.9"), root=None, tol=1e-80, maxit=50)
+        rN = newton(f, df, mpmath.mpf("0.9"), root=ref_N["root"], tol=1e-80, maxit=50)
 
-        ref_M = m4(f, df, mpmath.mpf('0.9'), root=None, tol=1e-80, maxit=50)
-        rM = m4(f, df, mpmath.mpf('0.9'), root=ref_M["root"], tol=1e-80, maxit=50)
+        ref_M = m4(f, df, mpmath.mpf("0.9"), root=None, tol=1e-80, maxit=50)
+        rM = m4(f, df, mpmath.mpf("0.9"), root=ref_M["root"], tol=1e-80, maxit=50)
 
-        ref_S = secant(f, mpmath.mpf('0.5'), mpmath.mpf('1.5'), root=None, tol=1e-80, maxit=50)
-        rS = secant(f, mpmath.mpf('0.5'), mpmath.mpf('1.5'), root=ref_S["root"], tol=1e-80, maxit=50)
+        ref_S = secant(
+            f, mpmath.mpf("0.5"), mpmath.mpf("1.5"), root=None, tol=1e-80, maxit=50
+        )
+        rS = secant(
+            f,
+            mpmath.mpf("0.5"),
+            mpmath.mpf("1.5"),
+            root=ref_S["root"],
+            tol=1e-80,
+            maxit=50,
+        )
         plt.figure(figsize=(7, 4.5))
-        for label, r, marker in [("Newton", rN, "o"), ("M4 (proposed)", rM, "s"), ("Secant", rS, "^")]:
+        for label, r, marker in [
+            ("Newton", rN, "o"),
+            ("M4 (proposed)", rM, "s"),
+            ("Secant", rS, "^"),
+        ]:
             errs = [float(e) for e in r["errors"] if e > 0]
             plt.semilogy(range(1, len(errs) + 1), errs, marker + "-", label=label)
         plt.xlabel("Iteration")
@@ -119,7 +139,14 @@ def run():
 
     print("Wrote", csv_path)
     for row in rows:
-        print(row["function"], row["method"], "iters=", row["iterations"], "order=", row["estimated_order"])
+        print(
+            row["function"],
+            row["method"],
+            "iters=",
+            row["iterations"],
+            "order=",
+            row["estimated_order"],
+        )
 
 
 if __name__ == "__main__":
