@@ -98,22 +98,37 @@ def run():
         import matplotlib.pyplot as plt
 
         name = "poly5"
-        f = lambda x: x**5 - x - mpmath.mpf("0.1")
-        df = lambda x: mpmath.mpf("5.0") * x**4 - mpmath.mpf("1.0")
-        # Use individual reference roots for error convergence plotting
-        ref_N = newton(f, df, mpmath.mpf("0.9"), root=None, tol=1e-80, maxit=50)
-        rN = newton(f, df, mpmath.mpf("0.9"), root=ref_N["root"], tol=1e-80, maxit=50)
+        f = None
+        df = None
+        x0_N = None
+        x0_S = None
+        x1_S = None
+        for t_name, t_f, t_df, t_x0, t_sx0, t_sx1 in TESTS:
+            if t_name == "poly5":
+                f = t_f
+                df = t_df
+                x0_N = t_x0
+                x0_S = t_sx0
+                x1_S = t_sx1
+                break
 
-        ref_M = m4(f, df, mpmath.mpf("0.9"), root=None, tol=1e-80, maxit=50)
-        rM = m4(f, df, mpmath.mpf("0.9"), root=ref_M["root"], tol=1e-80, maxit=50)
+        if f is None or df is None:
+            raise ValueError("poly5 test not found in configuration")
+
+        # Use individual reference roots for error convergence plotting
+        ref_N = newton(f, df, x0_N, root=None, tol=1e-80, maxit=50)
+        rN = newton(f, df, x0_N, root=ref_N["root"], tol=1e-80, maxit=50)
+
+        ref_M = m4(f, df, x0_N, root=None, tol=1e-80, maxit=50)
+        rM = m4(f, df, x0_N, root=ref_M["root"], tol=1e-80, maxit=50)
 
         ref_S = secant(
-            f, mpmath.mpf("0.5"), mpmath.mpf("1.5"), root=None, tol=1e-80, maxit=50
+            f, x0_S, x1_S, root=None, tol=1e-80, maxit=50
         )
         rS = secant(
             f,
-            mpmath.mpf("0.5"),
-            mpmath.mpf("1.5"),
+            x0_S,
+            x1_S,
             root=ref_S["root"],
             tol=1e-80,
             maxit=50,

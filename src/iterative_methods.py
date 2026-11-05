@@ -8,9 +8,15 @@ All methods return a result dictionary with keys:
 
 from __future__ import annotations
 
+import cmath
 import logging
 import math
 from typing import Any, Callable, Dict, List, Optional
+
+try:
+    import mpmath  # type: ignore
+except ImportError:
+    mpmath = None
 
 logger = logging.getLogger(__name__)
 
@@ -22,8 +28,6 @@ def _is_valid(v: Any) -> bool:
         return False
     if isinstance(v, complex):
         try:
-            import cmath
-
             if cmath.isnan(v) or cmath.isinf(v):
                 return False
         except Exception:
@@ -35,13 +39,20 @@ def _is_valid(v: Any) -> bool:
             ):
                 return False
     if hasattr(v, "ae"):  # basic check for mpmath types
-        try:
-            import mpmath  # type: ignore
+        if mpmath is not None:
+            try:
+                if mpmath.isnan(v) or mpmath.isinf(v):
+                    return False
+            except Exception:
+                pass
+        else:
+            try:
+                import mpmath as local_mpmath  # type: ignore
 
-            if mpmath.isnan(v) or mpmath.isinf(v):
-                return False
-        except Exception:
-            pass
+                if local_mpmath.isnan(v) or local_mpmath.isinf(v):
+                    return False
+            except Exception:
+                pass
     return True
 
 
