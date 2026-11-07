@@ -153,9 +153,9 @@ def secant(
     xs = [x0, x1]
     errors: List[Any] = []
     converged = False
+    f0 = _safe_call(f, xs[-2], verbose=verbose, context="Secant f(x0)")
+    f1 = _safe_call(f, xs[-1], verbose=verbose, context="Secant f(x1)")
     for _ in range(maxit):
-        f0 = _safe_call(f, xs[-2], verbose=verbose, context="Secant f(x0)")
-        f1 = _safe_call(f, xs[-1], verbose=verbose, context="Secant f(x1)")
         if f0 is None or f1 is None:
             break
         try:
@@ -181,6 +181,8 @@ def secant(
         ):
             converged = True
             break
+        f0 = f1
+        f1 = _safe_call(f, xs[-1], verbose=verbose, context="Secant f(x1)")
     return {
         "method": "Secant",
         "root": xs[-1],
